@@ -1,7 +1,7 @@
 # V-Ray/Phoenix GUI automation build tester
 Automation GUI tester software for end to end test of V-Ray and Phoenix products of Chaos. The main focus is to ensure the basic functionality of V-Ray/Phoenix works as expected. The software also captures the tests on video, that could be quite handy in case of additional troubleshooting.
 
-Here is short list of the automated process:
+# Testnig Procedures:
 
 __V-Ray for 3ds Max automation procedure__:
 1. Install V-Ray
@@ -29,14 +29,16 @@ __Phoenix for 3ds Max automation procedure__:
 8. Render the scene in 3ds Max
 
 # Challenges
+Although the process of controlling the GUI looks very intuitive at first look, many unexpected obsticles may appear out of nowhere.
+The main challenge was to set the proper timing for each of the operations in the list, if something is faster or slower than it should be the result is failed test. Another challenge was related SikuliX limitations that need to be workarounded with external batch or python script commands.
 
 # Technology
 * SikuliX - most of the code is written SikuliX IDE.
 * Python - some part of the code are implemented in Python due to SikuliX limitation.
 
 # What I learned
+* How to control the GUI with SikuliX framework and perform automatic quality assurance tests.
 
 # Demos/Examples
-https://youtu.be/3r-NcAcDccQ
-
-https://youtu.be/d8TIRa9wW4Y
+* V-Ray for 3ds Max: https://youtu.be/3r-NcAcDccQ
+* Phoenix for 3ds Max: https://youtu.be/d8TIRa9wW4Y
