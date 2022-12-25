@@ -1,6 +1,21 @@
 # V-Ray/Phoenix GUI automation build tester
-Automation tester software for end to end test of V-Ray and Phoenix software.
+Automation GUI tester software for end to end test of V-Ray and Phoenix software.
+Here is short list of the automated process:
 
+## V-Ray for 3ds Max automation procedure
+1. Install V-Ray
+2. Launch 3ds Max
+3. Create a sample scene in 3ds Max
+4. Render the scene within 3ds Max with
+    * V-Ray CPU Production
+    * V-Ray CPU IPR
+    * V-Ray GPU CUDA Production
+    * V-Ray CPU CUDA IPR
+9. Export .vrscene for V-Ray Standalone Rendering
+10. Render exported .vrscene in V-Ray Standalone with
+    * V-Ray CPU Production
+    * V-Ray CPU IPR
+    * V-Ray GPU CUDA IPR
 
 # Challenges
 
@@ -10,11 +25,5 @@ Automation tester software for end to end test of V-Ray and Phoenix software.
 
 # Demos/Examples
 https://youtu.be/3r-NcAcDccQ
+
 https://youtu.be/d8TIRa9wW4Y
-
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=3r-NcAcDccQ
-" target="_blank"><img src="http://img.youtube.com/vi/3r-NcAcDccQ/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="480" height="360" border="10" /></a>
-
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/d8TIRa9wW4Y/0.jpg)](http://www.youtube.com/watch?v=d8TIRa9wW4Y)
