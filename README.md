@@ -3,7 +3,7 @@ Automation GUI tester software for end to end test of V-Ray and Phoenix products
 
 # Testnig Procedures:
 
-__V-Ray for 3ds Max automation procedure__:
+__V-Ray for 3ds Max/Maya automation procedure__:
 1. Install V-Ray
 2. Launch 3ds Max
 3. Create a sample scene in 3ds Max
@@ -41,4 +41,5 @@ The main challenge was to set the proper timing for each of the operations in th
 
 # Demos/Examples
 * V-Ray for 3ds Max: https://youtu.be/3r-NcAcDccQ
+* V-Ray for Maya: https://youtu.be/kBPsG8T098M
 * Phoenix for 3ds Max: https://youtu.be/d8TIRa9wW4Y
