@@ -1,0 +1,368 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>func.sikuli</h2> <a href="func.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">from</span> sikuli <span class="kw">import</span> *
+<span class="kw">import</span> os <span class="cmt">#needed of OS-operations like getting parrent dir etc.</span>
+<span class="kw">import</span> org.sikuli.basics.FileManager <span class="kw">as</span> FM <span class="cmt">#needed for downloading JSON file from the license server.</span>
+<span class="kw">import</span> json <span class="cmt">#needed for parsing JSON file from the License server</span>
+<span class="kw">import</span> img <span class="cmt">#import images</span>
+<span class="kw">import</span> subprocess <span class="cmt">#needed for calling installer/uninstaller</span>
+<span class="kw">from</span> subprocess <span class="kw">import</span> Popen, PIPE <span class="cmt">#needed to get output from external python scripts</span>
+<span class="kw">import</span> ast <span class="cmt">#needed to convert output from external scripts to dictionary</span>
+<span class="kw">import</span> operator <span class="cmt">#needed to sort bulds by two criteria, max version and build type</span>
+<span class="cmt">#import __builtin__ as __builtin__ # python native type() command usage: print(__builtin__.type(stdout))</span>
+
+<span class="cmt">###################GET-LICENSE###################</span>
+<span class="kw">def</span> getLicense():
+    license_status = FM.downloadURLtoString(<span class="str">"http://localhost:30304/status"</span>)
+    license_json = json.loads(license_status)
+    <span class="kw">try</span>:
+        <span class="kw">for</span> product <span class="kw">in</span> license_json[<span class="str">'online'</span>][<span class="str">'site'</span>][<span class="str">'online'</span>][<span class="str">'products'</span>]:
+            interface_lic = license_json[<span class="str">'online'</span>][<span class="str">'site'</span>][<span class="str">'online'</span>][<span class="str">'products'</span>][product][<span class="str">'1'</span>]
+            render_node_lic = license_json[<span class="str">'online'</span>][<span class="str">'site'</span>][<span class="str">'online'</span>][<span class="str">'products'</span>][product][<span class="str">'2'</span>]
+            product_name = license_json[<span class="str">'online'</span>][<span class="str">'site'</span>][<span class="str">'online'</span>][<span class="str">'products'</span>][product][<span class="str">'productLabel'</span>]
+
+            <span class="kw">if</span> interface_lic <span class="kw">and</span> render_node_lic:
+                Debug.user(<span class="str">"LICENSE: %s, Interface: %s, Render: %s"</span> % (product_name, interface_lic, render_node_lic))
+            <span class="kw">elif</span> interface_lic:
+                Debug.user(<span class="str">"LICENSE: %s, Interface: %s"</span> % (product_name, interface_lic))
+            <span class="kw">elif</span> render_node_lic:
+                Debug.user(<span class="str">"LICENSE: %s, Render: %s"</span> % (product_name, render_node_lic))
+    <span class="kw">except</span>:
+        Debug.user(<span class="str">'-------------NO-LICENSE-BEING-USED-------------'</span>)
+
+
+<span class="cmt">###################GET-BIULDS###################</span>
+<span class="kw">def</span> getBuilds(dir):
+    builds = []
+    result = []
+    <span class="kw">for</span> file <span class="kw">in</span> os.listdir(dir):
+        <span class="kw">if</span> file.endswith(<span class="str">".exe"</span>):
+            x = []
+            x.append(dir + <span class="str">"\\"</span> + file)
+            max_ver = file.split(<span class="str">'_'</span>)[<span class="dig">3</span>]
+            x.append(max_ver)
+            build_type = file.split(<span class="str">'_'</span>)[<span class="dig">4</span>]
+            x.append(build_type)
+            builds.append(x)
+    builds.sort(key = operator.itemgetter(<span class="dig">1</span>, <span class="dig">2</span>), reverse=True) <span class="cmt">#sort builds by two criterias, max_version and vray_version</span>
+    <span class="kw">for</span> build <span class="kw">in</span> builds:
+        result.append(build[<span class="dig">0</span>])
+    <span class="kw">return</span> result
+
+
+<span class="cmt">###################PHOENIX-INSTALLATION###################</span>
+<span class="kw">def</span> installPhoenix(build):
+    Debug.user(<span class="str">"Installing %s"</span> %(build.split(<span class="str">"\\"</span>)[<span class="dig">2</span>]))
+    App.open(<span class="str">'CMD /C '</span> + build)
+    <span class="skw">wait</span>(img.phoenixFD_install_win,<span class="dig">15</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.phoenixFD_I_accept)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.phoenixFD_next)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.phoenixFD_install_now)
+    <span class="skw">wait</span>(img.phoenixFD_finish,<span class="dig">30</span>)
+    <span class="kw">if</span> exists(img.phoenixFD_checkbox_enabled,<span class="dig">5</span>):
+        checkboxes = findAll(img.phoenixFD_checkbox_enabled)
+        <span class="kw">for</span> checkbox <span class="kw">in</span> checkboxes:
+            checkbox.<span class="skw">click</span>()
+    <span class="skw">click</span>(img.phoenixFD_finish)
+    <span class="skw">wait</span>(<span class="dig">3</span>)
+
+<span class="cmt">###################CLOSE-BROWSER###################</span>
+<span class="kw">def</span> closeBrowser():
+    <span class="skw">type</span>(Key.F4, Key.CTRL)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.SPACE, KeyModifier.ALT)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(<span class="str">'n'</span>)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+
+<span class="cmt">####################START/CLOSE-3DSMAX###################</span>
+<span class="kw">def</span> start3dsMax(version):
+
+    <span class="cmt">#maxExecutable = (os.getenv('ADSK_3DSMAX_x64_' + version)) + "3dsmax.exe"</span>
+    cmd = <span class="str">'python '</span> + <span class="str">'"'</span> + getParentFolder() + <span class="str">'get_3dsmax_registry.py'</span> + <span class="str">'" '</span> + version
+    p = Popen(cmd, stdout=PIPE)
+    maxExecutable = p.communicate()[<span class="dig">0</span>].strip(<span class="str">'\n'</span>)[:-<span class="dig">1</span>] + <span class="str">'3dsmax.exe'</span>
+
+    App.open(maxExecutable)
+    <span class="skw">wait</span>(img.max_viewport,<span class="dig">300</span>)
+    <span class="cmt">#wait(img.max_command_panel[version],30)</span>
+    <span class="cmt">#wait(img.max_top,30)</span>
+    <span class="cmt">#wait(img.max_anim_tools[version],30)</span>
+    <span class="skw">wait</span>(<span class="dig">30</span>)
+    changeMaxIniSettings()
+    <span class="cmt">######################################################################################click(img.maximize_viewport[version])</span>
+    Debug.user(<span class="str">"3ds Max %s started"</span> %version)
+
+<span class="kw">def</span> close3dsMax(version):
+    App.close(<span class="str">"3dsmax.exe"</span>)
+    Debug.user(<span class="str">"3ds Max %s closed"</span> %version)
+
+<span class="kw">def</span> resetMaxFile():
+    paste(img.maxscript_mini, <span class="str">"resetMaxFile(#noPrompt)"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="kw">def</span> changeMaxIniSettings():
+    paste(img.maxscript_mini, <span class="str">"iniFile = getMAXIniFile()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    paste(img.maxscript_mini, <span class="str">'setINISetting iniFile "MAXScript" "EnableMacroRecorder" "0"'</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+
+<span class="cmt">###################CREATE-VRAY-SCENE###################</span>
+<span class="kw">def</span> createVrayScene(version):
+    <span class="skw">click</span>(img.domelight)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="skw">click</span>(img.screen_center)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="skw">rightClick</span>()
+
+
+<span class="cmt">###################CREATE-SIMULATION###################</span>
+<span class="kw">def</span> createSim(version,sim):
+    resetMaxFile()
+    <span class="skw">click</span>(img.standard_primitives[version])
+    <span class="skw">click</span>(img.box)
+    <span class="skw">click</span>(img.box_keyboard_entry_rollout[version])
+    <span class="skw">doubleClick</span>(img.box_keyboard_entry[version])
+    <span class="skw">type</span>(<span class="str">"25"</span>)
+    <span class="skw">type</span>(Key.TAB)
+    <span class="skw">type</span>(<span class="str">"25"</span>)
+    <span class="skw">type</span>(Key.TAB)
+    <span class="skw">type</span>(<span class="str">"25"</span>)
+    <span class="skw">click</span>(img.box_create)
+
+    Debug.user(<span class="str">"Simulation started"</span>)
+    <span class="kw">if</span> sim==<span class="str">'beer'</span>:
+        <span class="skw">click</span>(img.phoenix_beer)
+        paste(img.maxscript_mini, <span class="str">"$.mat = StandardMaterial()"</span>)
+        <span class="skw">wait</span>(<span class="dig">0.3</span>)
+        <span class="skw">type</span>(Key.ENTER)
+        <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="kw">elif</span> sim==<span class="str">'fire'</span>:
+        <span class="skw">click</span>(img.phoenix_fire)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.phoenix_start_sim)
+    <span class="skw">wait</span>(<span class="dig">30</span>)
+    getLicense()
+    <span class="skw">click</span>(img.phoenix_stop_sim)
+    <span class="skw">wait</span>(<span class="dig">3</span>)
+    Debug.user(<span class="str">"Simulation completed"</span>)
+
+<span class="cmt">###################RENDER-SCENE###################</span>
+<span class="kw">def</span> renderVray(build, version, sim_preset):
+    Debug.user(<span class="str">"V-Ray Rendering started"</span>)
+    <span class="kw">if</span> sim_preset == <span class="str">'beer'</span>:
+        paste(img.maxscript_mini, <span class="str">'VRayLight invisible:1 type:1 intensityAt:39.3701 webfile:"{00000000-0000-0000-0000-000000000000}" on:on castShadows:on rgb:(color 255 255 255) rgbFilter:(color 255 255 255) intensity:3483.86 kelvin:6500 useKelvin:on intensityType:0 originalintensity:1500 useMultiplier:off multiplier:1 shiftColorWhenDimming:off useFarAttenuation:off displayFarAttenuationGizmo:off startFarAttenuation:80 endFarAttenuation:200 contrast:0 softenDiffuseEdge:0 projector:off affectDiffuse:on affectSpecular:on ambientOnly:off targetDistance:240 light_length:48 light_Width:24 light_Radius:5.5 atmosShadows:off atmosOpacity:100 atmosColorAmt:100 shadowMultiplier:1 shadowColorMapEnable:off shadowColor:(color 0 0 0) lightAffectsShadow:off useGlobalShadowSettings:off hotspot:30 falloff:60 showCone:off xRotation:0 yRotation:0 zRotation:0'</span>)
+        <span class="skw">wait</span>(<span class="dig">0.3</span>)
+        <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"renderers.current=Vray()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"renderers.current.progressive_max_render_time=0.1"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">click</span>(img.render_btn[version])
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    getLicense()
+    <span class="skw">wait</span>(<span class="dig">10</span>)
+    output_name = <span class="str">'vfbControl #saveimage '</span>+ <span class="str">"\""</span> + build.split(<span class="str">"."</span>)[<span class="dig">0</span>] + <span class="str">'_'</span> + sim_preset + <span class="str">".jpg\""</span>
+    paste(img.maxscript_mini, output_name)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    Debug.user(<span class="str">"V-Ray Rendering completed"</span>)
+
+<span class="kw">def</span> renderVrayIPR(build, version, sim_preset):
+    Debug.user(<span class="str">"V-Ray IPR Rendering started"</span>)
+    <span class="kw">if</span> sim_preset == <span class="str">'beer'</span>:
+        paste(img.maxscript_mini, <span class="str">'VRayLight invisible:1 type:1 intensityAt:39.3701 webfile:"{00000000-0000-0000-0000-000000000000}" on:on castShadows:on rgb:(color 255 255 255) rgbFilter:(color 255 255 255) intensity:3483.86 kelvin:6500 useKelvin:on intensityType:0 originalintensity:1500 useMultiplier:off multiplier:1 shiftColorWhenDimming:off useFarAttenuation:off displayFarAttenuationGizmo:off startFarAttenuation:80 endFarAttenuation:200 contrast:0 softenDiffuseEdge:0 projector:off affectDiffuse:on affectSpecular:on ambientOnly:off targetDistance:240 light_length:48 light_Width:24 light_Radius:5.5 atmosShadows:off atmosOpacity:100 atmosColorAmt:100 shadowMultiplier:1 shadowColorMapEnable:off shadowColor:(color 0 0 0) lightAffectsShadow:off useGlobalShadowSettings:off hotspot:30 falloff:60 showCone:off xRotation:0 yRotation:0 zRotation:0'</span>)
+        <span class="skw">wait</span>(<span class="dig">0.3</span>)
+        <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"renderers.current=VrayRT()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"vrayStartIPR()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    getLicense()
+    <span class="skw">wait</span>(<span class="dig">10</span>)
+    paste(img.maxscript_mini, <span class="str">"vrayStopIPR()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    output_name = <span class="str">'vfbControl #saveimage '</span>+ <span class="str">"\""</span> + build.split(<span class="str">"."</span>)[<span class="dig">0</span>] + <span class="str">'_'</span> + sim_preset + <span class="str">"_IPR.jpg\""</span>
+    paste(img.maxscript_mini, output_name)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    Debug.user(<span class="str">"V-Ray IPR Rendering completed"</span>)
+
+<span class="kw">def</span> renderScanline(build, version , sim_preset):
+    Debug.user(<span class="str">"Scanline Rendering started"</span>)
+    paste(img.maxscript_mini, <span class="str">"renderers.current=Default_Scanline_Renderer()"</span>)
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">click</span>(img.render_btn[version])
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    getLicense()
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    output_name = <span class="str">'vfbControl #saveimage '</span>+ <span class="str">"\""</span> + build.split(<span class="str">"."</span>)[<span class="dig">0</span>] + <span class="str">".jpg\""</span>
+    paste(img.maxscript_mini, <span class="str">"img = getlastrenderedimage()"</span>)
+    <span class="cmt">#print("img = getlastrenderedimage()")</span>
+    <span class="cmt">#print("img.filename = " + "\"" + build.split(".")[0] + ".jpg\"")</span>
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"img.filename = "</span> + <span class="str">"\""</span> + build.split(<span class="str">"."</span>)[<span class="dig">0</span>] + <span class="str">"_"</span> + sim_preset + <span class="str">".jpg\""</span> )
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    paste(img.maxscript_mini, <span class="str">"save img"</span> )
+    <span class="skw">wait</span>(<span class="dig">0.3</span>)
+    <span class="skw">type</span>(Key.ENTER)
+    Debug.user(<span class="str">"Scanline Rendering completed"</span>)
+
+<span class="cmt">###################INSTALL-VRAY###################</span>
+<span class="kw">def</span> installVray(version,buildsDir,vray_version):
+    <span class="kw">for</span> file <span class="kw">in</span> os.listdir(buildsDir + <span class="str">'\\vray'</span>):
+        <span class="kw">if</span> (file.endswith(<span class="str">'.exe'</span>) <span class="kw">and</span> (version <span class="kw">in</span> file) <span class="kw">and</span> (vray_version <span class="kw">in</span> file)):
+            Do.<span class="skw">popup</span>(<span class="str">"Installing "</span> + file,<span class="str">"Working on..."</span>, <span class="dig">2</span>)
+            Debug.user(<span class="str">"Installing %s"</span> %(file))
+            arg1 = buildsDir + <span class="str">'\\vray\\'</span> + file
+            arg2 = <span class="str">'-configFile='</span> + buildsDir + <span class="str">'\\vray\\config.xml'</span>
+            arg3 = <span class="str">'-gui=0'</span>
+            arg4 = <span class="str">'-quiet=0'</span>
+            subprocess.call([arg1, arg2, arg3, arg4])
+
+            <span class="cmt">#p = Popen([arg1, arg2, arg3, arg4], stdout=PIPE)</span>
+            <span class="cmt">#stdout = p.communicate()[0]</span>
+            <span class="cmt">#print stdout</span>
+            <span class="cmt">#exit()</span>
+
+
+<span class="cmt">###################GET-VRAY-VERSION###################</span>
+<span class="kw">def</span> getVRayFromReg(version, output):
+    <span class="cmt">#version = 3dsMax version, output determines if vray-version or vray-installation-path will be outputted</span>
+    <span class="cmt">#sample usage getVRayFromReg(version, 'ver') / getVRayFromReg(version, 'path')</span>
+
+    cmd = <span class="str">'python '</span> + <span class="str">'"'</span> + getParentFolder() + <span class="str">'get_vray_registry.py'</span> + <span class="str">'" '</span> + version
+    p = Popen(cmd, stdout=PIPE)
+    stdout = p.communicate()[<span class="dig">0</span>]
+    stdout = ast.literal_eval(stdout)
+    vray_current_version = stdout[<span class="str">'ver'</span>]
+    vray_install_path = stdout[<span class="str">'path'</span>]
+
+    <span class="kw">if</span> output == <span class="str">'ver'</span>:
+        <span class="kw">if</span> stdout[<span class="str">'ver'</span>]:
+            <span class="kw">return</span> stdout[<span class="str">'ver'</span>]
+    <span class="kw">elif</span> output == <span class="str">'path'</span>:
+        <span class="kw">if</span> stdout[<span class="str">'path'</span>]:
+            <span class="kw">return</span> stdout[<span class="str">'path'</span>]
+
+<span class="cmt">###################UNINSTALL-VRAY###################</span>
+<span class="kw">def</span> uninstallVray(version):
+
+    Do.<span class="skw">popup</span>(<span class="str">"Unstalling V-Ray "</span> + getVRayFromReg(version, <span class="str">'ver'</span>) ,<span class="str">"Working on..."</span>, <span class="dig">2</span>)
+    Debug.user(<span class="str">"Unstalling V-Ray %s"</span> %(getVRayFromReg(version, <span class="str">'ver'</span>)))
+    arg1 = getVRayFromReg(version, <span class="str">'path'</span>)[<span class="dig">1</span>:-<span class="dig">1</span>]
+    arg2 = <span class="str">'-uninstall='</span> + getVRayFromReg(version, <span class="str">'path'</span>)[:-<span class="dig">14</span>] + <span class="str">'install.log"'</span>
+    arg3 = <span class="str">'-uninstallApp="V-Ray for 3dsmax '</span> + version + <span class="str">' for x64"'</span>
+    arg4 = <span class="str">'-gui=0'</span>
+    subprocess.call([arg1,arg2,arg3,arg4])
+
+    <span class="cmt">#remove leftover files</span>
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    cmd = <span class="str">'python '</span> + <span class="str">'"'</span> + getParentFolder() + <span class="str">'get_3dsmax_registry.py'</span> + <span class="str">'" '</span> + version
+    p = Popen(cmd, stdout=PIPE)
+    vray_leftover_scripts_path = p.communicate()[<span class="dig">0</span>].strip(<span class="str">'\n'</span>)[:-<span class="dig">1</span>] + <span class="str">'scripts\Startup'</span>
+    <span class="kw">for</span> file <span class="kw">in</span> os.listdir(vray_leftover_scripts_path):
+       <span class="kw">if</span> file.startswith(<span class="str">"vray"</span>):
+            os.remove(vray_leftover_scripts_path + <span class="str">'\\'</span> +file)
+
+
+
+<span class="cmt">###################SEND-EMAIL###################</span>
+<span class="kw">def</span> sendEmail(send_mail_script,buildsDir):
+    Debug.user(<span class="str">"Sending email"</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    run(<span class="str">'py "'</span> + getParentFolder() + send_mail_script + <span class="str">'" "'</span> + buildsDir + <span class="str">'"'</span>)
+</pre>
+</body>
+</html>

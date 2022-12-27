@@ -1,0 +1,197 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>main.sikuli</h2> <a href="main.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">from</span> sikuli <span class="kw">import</span> *
+<span class="kw">import</span> os <span class="cmt">#needed of OS-operations like getting parrent dir etc.</span>
+<span class="kw">import</span> socket <span class="cmt">#needed to get PC-name and IP-address</span>
+<span class="kw">import</span> func <span class="cmt">#import fuctions</span>
+
+buildsDir = <span class="str">r"D:\builds"</span> <span class="cmt">#directory where builds are located</span>
+send_mail_script = <span class="str">'send_email.py'</span> <span class="cmt">#python 2 script that sends email after test completion</span>
+
+
+<span class="cmt">###################GLOBAL-SETTINGS###################</span>
+Settings.MinSimilarity = <span class="dig">0.85</span>
+<span class="cmt">#Settings.SlowMotionDelay = 0.1</span>
+<span class="cmt">#Settings.Highlight = True</span>
+
+<span class="cmt">#Settings.UserLogs = True</span>
+<span class="cmt">#Settings.UserLogPrefix = os.environ['COMPUTERNAME'] + '_' + socket.gethostbyname(socket.gethostname()) #PCname and IPaddress</span>
+<span class="cmt">#Settings.UserLogTime = True</span>
+<span class="cmt">#Debug.setUserLogFile(buildsDir + "\\userLog.txt")</span>
+
+<span class="cmt">#Debug.on(3) </span>
+<span class="cmt">#Settings.ActionLogs = True</span>
+<span class="cmt">#Settings.InfoLogs = True</span>
+<span class="cmt">#Settings.DebugLogs = True</span>
+<span class="cmt">#Settings.LogTime = True</span>
+<span class="cmt">#Debug.setLogFile(buildsDir + "\\actionLog.txt")</span>
+
+
+<span class="cmt">###################START-RECORDING###################</span>
+<span class="cmt">#ffmpeg_cmd = [getParentFolder()+ r'ffmpeg.exe','-t','03:00:00', '-y', '-f', 'gdigrab', '-s', '1920x1200', '-framerate', '10', '-i', 'desktop', buildsDir +r'\video.mp4']</span>
+<span class="cmt">#video_capture = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=None, stderr=None, close_fds=True)</span>
+
+
+<span class="cmt">###################START-SIKULI-JOB###################</span>
+<span class="kw">try</span>:
+    App.close(<span class="str">"3dsmax.exe"</span>)
+    builds = func.getBuilds(buildsDir) <span class="cmt">#get a list of builds </span>
+
+
+    <span class="cmt">#LOOP THROUGH ALL THE BUILDS IN THE INPUT FOLDER (buildsDir)</span>
+    <span class="kw">for</span> build <span class="kw">in</span> builds:
+        version = build.split(<span class="str">"_"</span>)[<span class="dig">3</span>][<span class="dig">3</span>:] <span class="cmt">#get 3dsMax version</span>
+        build_type=<span class="str">''</span> <span class="cmt">#determine if installer is for defscanline/vray3/vray4</span>
+
+        <span class="cmt">#DETERMINE BUILD TYPE: SCANLINE/VRAY3/VRAY4</span>
+        <span class="kw">if</span> build.<span class="skw">find</span>(<span class="str">'defscanline'</span>) !=-<span class="dig">1</span>:
+            build_type=<span class="str">'defscanline'</span>
+            <span class="kw">print</span>(<span class="str">"Phoenix Build Type: SCANLINE"</span>)
+        <span class="kw">elif</span> build.<span class="skw">find</span>(<span class="str">'vray3'</span>) !=-<span class="dig">1</span>:
+            build_type=<span class="str">'vray3'</span>
+            <span class="kw">print</span>(<span class="str">"Phoenix Build Type: V-RAY 3"</span>)
+        <span class="kw">elif</span> build.<span class="skw">find</span>(<span class="str">'vray4'</span>) !=-<span class="dig">1</span>:
+            build_type=<span class="str">'vray4'</span>
+            <span class="kw">print</span>(<span class="str">"Phoenix Build Type: V-RAY 4"</span>)
+
+
+        <span class="cmt">#INSTALL PROPER VRAY BUILD OR REMOVE VRAY FOR SCANLINE TESTS</span>
+        <span class="kw">if</span> build_type == <span class="str">'vray3'</span>:
+            <span class="cmt">#CHECK IF CURRENT VERSION IS VRAY3 AND IF NOT INSTALL IT</span>
+            <span class="kw">if</span> func.getVRayFromReg(version, <span class="str">'ver'</span>)==None:
+                func.installVray(version,buildsDir,<span class="str">'vray_adv_3'</span>)
+            <span class="kw">elif</span> (func.getVRayFromReg(version, <span class="str">'ver'</span>)[<span class="dig">0</span>])!=<span class="str">'3'</span>:
+                func.uninstallVray(version)
+                func.installVray(version,buildsDir,<span class="str">'vray_adv_3'</span>)
+
+            func.installPhoenix(build)
+            func.closeBrowser()
+            func.start3dsMax(version)
+            <span class="cmt">###func.createVrayScene(version)</span>
+            func.createSim(version,<span class="str">'fire'</span>)
+            func.renderVray(build, version, <span class="str">'fire'</span>)
+            func.createSim(version,<span class="str">'beer'</span>)
+            func.renderVray(build, version, <span class="str">'beer'</span>)
+
+        <span class="kw">elif</span> build_type == <span class="str">'vray4'</span>:
+            <span class="cmt">#CHECK IF CURRENT VERSION IS VRAY4 AND IF NOT INSTALL IT</span>
+            <span class="kw">if</span> func.getVRayFromReg(version, <span class="str">'ver'</span>)==None:
+                func.installVray(version,buildsDir,<span class="str">'vray_adv_4'</span>)
+            <span class="kw">elif</span> (func.getVRayFromReg(version, <span class="str">'ver'</span>)[<span class="dig">0</span>])!=<span class="str">'4'</span>:
+                func.uninstallVray(version)
+                func.installVray(version,buildsDir,<span class="str">'vray_adv_4'</span>)
+
+            func.installPhoenix(build)
+            func.closeBrowser()
+            func.start3dsMax(version)
+            <span class="cmt">#func.createVrayScene(version)</span>
+            func.createSim(version,<span class="str">'fire'</span>)
+            func.renderVray(build, version, <span class="str">'fire'</span>)
+            func.renderVrayIPR(build, version, <span class="str">'fire'</span>)
+            func.createSim(version,<span class="str">'beer'</span>)
+            func.renderVray(build, version, <span class="str">'beer'</span>)
+            func.renderVrayIPR(build, version, <span class="str">'beer'</span>)
+
+        <span class="kw">elif</span> build_type == <span class="str">'defscanline'</span>:
+            <span class="cmt">#CHECK IF VRAY IS INSTALLED AND IF IT IS UNINSTALL IT</span>
+            <span class="kw">if</span> func.getVRayFromReg(version, <span class="str">'ver'</span>)!=None:
+                func.uninstallVray(version)
+
+            func.installPhoenix(build)
+            func.closeBrowser()
+            func.start3dsMax(version)
+            func.createSim(version,<span class="str">'fire'</span>)
+            func.renderScanline(build, version, <span class="str">'fire'</span>)
+            func.createSim(version,<span class="str">'beer'</span>)
+            func.renderScanline(build, version, <span class="str">'beer'</span>)
+        func.close3dsMax(version)
+<span class="kw">except</span>:
+    video_capture.communicate(<span class="skw">input</span>=<span class="str">'q'</span>) <span class="cmt">#STOP RECORDING IF SIKULI-SCRIPT FAILS</span>
+    exit()
+
+video_capture.communicate(<span class="skw">input</span>=<span class="str">'q'</span>) <span class="cmt">#STOP RECORDING</span>
+<span class="cmt">#func.sendEmail(send_mail_script,buildsDir)</span>
+
+
+<span class="cmt">###################TO-DO###################</span>
+<span class="cmt"># find a way to continue test if something fails.</span>
+<span class="cmt"># better way to check if 3dsmax is ready for using, right now it waits 30s after right-down toolbar is found</span>
+<span class="cmt"># better way to handle rendering time, right now it is hardcoded but it would be better to look for vanishing of progress win</span>
+<span class="cmt"># improove installation code, sometimes it doesnt work well for the click after I agree btn</span>
+<span class="cmt"># improove browser minimizing after phoenix installation - it doesnt work every time</span>
+<span class="cmt"># video recording</span>
+<span class="cmt"># run script on virtual machine</span>
+
+</pre>
+</body>
+</html>

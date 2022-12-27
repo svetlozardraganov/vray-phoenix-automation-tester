@@ -1,0 +1,353 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>func_maya.sikuli</h2> <a href="func_maya.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">from</span> sikuli <span class="kw">import</span> *
+<span class="kw">import</span> img <span class="cmt">#import images</span>
+<span class="kw">import</span> func <span class="cmt">#import common functions</span>
+<span class="kw">import</span> subprocess <span class="cmt">#needed for calling installer/uninstaller</span>
+<span class="kw">from</span> subprocess <span class="kw">import</span> Popen, PIPE <span class="cmt">#needed to get output from external python scripts</span>
+<span class="kw">import</span> shutil
+<span class="kw">import</span> zipfile <span class="cmt"># needed for extraction files for ZIP installation</span>
+<span class="kw">import</span> os <span class="cmt">#needed to set environment variables</span>
+
+<span class="cmt">####################-VRAY-GUI-INSTALL-###################</span>
+
+<span class="kw">def</span> installVRayMayaGui(build):
+    Debug.user(<span class="str">"Installing %s"</span> %(build.split(<span class="str">"\\"</span>)[<span class="dig">2</span>]))
+    Do.<span class="skw">popup</span>( build ,<span class="str">"Installing ..."</span>, <span class="dig">1</span>)
+    App.open(build)
+    <span class="skw">wait</span>(img.cg_maya_install_win,<span class="dig">15</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.cg_install_I_accept)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.cg_install_next)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+    <span class="skw">click</span>(img.cg_install_install_now)
+    <span class="skw">wait</span>(img.cg_install_finish,<span class="dig">120</span>)
+    <span class="kw">if</span> exists(img.cg_install_checkbox,<span class="dig">5</span>):
+        checkboxes = findAll(img.cg_install_checkbox)
+        <span class="kw">for</span> checkbox <span class="kw">in</span> checkboxes:
+            checkbox.<span class="skw">click</span>()
+    <span class="skw">click</span>(img.cg_install_finish)
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+
+<span class="cmt">####################-VRAY-ZIP-INSTALL-###################</span>
+
+<span class="kw">def</span> installVRayMayaZip(build,vray_zip_path):
+    Do.<span class="skw">popup</span>(<span class="str">"Might take a while"</span>, <span class="str">"Extracting Archive..."</span>, <span class="dig">2</span>)
+    <span class="kw">print</span>(<span class="str">'Extracting archive'</span>)
+    zip_ref = zipfile.ZipFile(build, <span class="str">'r'</span>)
+    zip_ref.extractall(vray_zip_path)
+    zip_ref.close()
+    <span class="kw">print</span>(<span class="str">'Extract completed'</span>)
+
+<span class="kw">def</span> setVrayMayaEnvVars(maya_version,vray_zip_path):
+    my_env = os.environ.copy()
+    my_env[<span class="str">'MAYA_RENDER_DESC_PATH'</span>] = vray_zip_path + <span class="str">r'\maya_root\bin\rendererDesc'</span>
+    my_env[<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_MAIN'</span>] = vray_zip_path + <span class="str">r'\maya_vray'</span>
+    my_env[<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_PLUGINS'</span>] = vray_zip_path + <span class="str">r'\maya_vray\vrayplugins'</span>
+    my_env[<span class="str">'VRAY_AUTH_CLIENT_FILE_PATH'</span>] = <span class="str">r'C:\Program Files\Common Files\ChaosGroup'</span>
+    my_env[<span class="str">'VRAY_OSL_PATH_MAYA'</span> + maya_version] = vray_zip_path + <span class="str">r'\vray\opensl'</span>
+    my_env[<span class="str">'PATH'</span>] = vray_zip_path + <span class="str">r'\maya_root\bin;'</span> + my_env[<span class="str">'PATH'</span>]
+
+    <span class="cmt">##Try Except is needed cause variables might or might not exist. If exists the new value is appended to varible if not new value is assigned to variable.</span>
+    <span class="kw">try</span>:
+        my_env[<span class="str">'MAYA_PLUG_IN_PATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\plug-ins;'</span> + my_env[<span class="str">'MAYA_PLUG_IN_PATH'</span>]
+    <span class="kw">except</span>:
+        my_env[<span class="str">'MAYA_PLUG_IN_PATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\plug-ins'</span>
+
+    <span class="kw">try</span>:
+        my_env[<span class="str">'MAYA_SCRIPT_PATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\scripts;'</span> + my_env[<span class="str">'MAYA_SCRIPT_PATH'</span>]
+    <span class="kw">except</span>:
+        my_env[<span class="str">'MAYA_SCRIPT_PATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\scripts'</span>
+
+    <span class="kw">try</span>:
+        my_env[<span class="str">'PYTHONPATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\scripts;'</span> + my_env[<span class="str">'PYTHONPATH'</span>]
+    <span class="kw">except</span>:
+        my_env[<span class="str">'PYTHONPATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\scripts'</span>
+
+    <span class="kw">try</span>:
+        my_env[<span class="str">'XBMLANGPATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\icons;'</span> + my_env[<span class="str">'XBMLANGPATH'</span>]
+    <span class="kw">except</span>:
+        my_env[<span class="str">'XBMLANGPATH'</span>] = vray_zip_path + <span class="str">r'\maya_vray\icons'</span>
+
+    <span class="cmt">#this one is for V-Ray Standalone</span>
+    <span class="kw">try</span>:
+        my_env[<span class="str">'VRAY_PLUGINS'</span>] = vray_zip_path + <span class="str">r'\maya_vray\vrayplugins;'</span> + my_env[<span class="str">'VRAY_PLUGINS'</span>]
+    <span class="kw">except</span>:
+        my_env[<span class="str">'VRAY_PLUGINS'</span>] = vray_zip_path + <span class="str">r'\maya_vray\vrayplugins'</span>
+
+    printVrayEnvVars(maya_version,my_env)
+    <span class="kw">return</span> my_env
+
+
+<span class="kw">def</span> printVrayEnvVars(maya_version,my_env):
+    <span class="kw">print</span> (<span class="str">'MAYA_RENDER_DESC_PATH = '</span>),
+    <span class="kw">print</span> (my_env[<span class="str">'MAYA_RENDER_DESC_PATH'</span>])
+
+    <span class="kw">print</span> (<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_MAIN = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_MAIN'</span>]
+
+    <span class="kw">print</span> (<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_PLUGINS = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'VRAY_FOR_MAYA'</span> + maya_version +<span class="str">'_PLUGINS'</span>]
+
+    <span class="kw">print</span> (<span class="str">'VRAY_OSL_PATH_MAYA'</span> + maya_version +<span class="str">' = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'VRAY_OSL_PATH_MAYA'</span> + maya_version]
+
+    <span class="kw">print</span> (<span class="str">'PATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'PATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'MAYA_PLUG_IN_PATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'MAYA_PLUG_IN_PATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'MAYA_SCRIPT_PATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'MAYA_SCRIPT_PATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'PYTHONPATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'PYTHONPATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'XBMLANGPATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'XBMLANGPATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'VRAY_AUTH_CLIENT_FILE_PATH = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'VRAY_AUTH_CLIENT_FILE_PATH'</span>]
+
+    <span class="kw">print</span> (<span class="str">'VRAY_PLUGINS = '</span>),
+    <span class="kw">print</span> my_env[<span class="str">'VRAY_PLUGINS'</span>]
+
+
+<span class="cmt">####################-MAYA--###################</span>
+
+<span class="kw">def</span> melCommand(command):
+    paste(img.maya_mel_script, command)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="skw">type</span>(Key.ENTER)
+
+
+<span class="kw">def</span> startMaya(maya_version, vray_zip_env_var = None):
+    cmd = <span class="str">'python '</span> + <span class="str">'"'</span> + getParentFolder() + <span class="str">'get_maya_registry.py'</span> + <span class="str">'" '</span> + maya_version
+    p = Popen(cmd, stdout=PIPE)
+    mayaExecutable = p.communicate()[<span class="dig">0</span>].strip(<span class="str">'\n'</span>)[:-<span class="dig">1</span>] + <span class="str">r'\bin\maya.exe'</span>
+
+    <span class="kw">if</span> vray_zip_env_var == None:
+        App.open(mayaExecutable)
+    <span class="kw">else</span>:
+        subprocess.Popen(mayaExecutable, env=vray_zip_env_var)
+    <span class="skw">wait</span>(img.maya_timeline,<span class="dig">300</span>)
+
+    Do.<span class="skw">popup</span>(func.getJoke(),<span class="str">"Waiting 30s to load Maya modules..."</span>,<span class="dig">30</span>)
+
+<span class="kw">def</span> resetScene():
+    <span class="cmt">#reset Scene</span>
+    melCommand(<span class="str">'file -f -new'</span>)
+    <span class="cmt">#melCommand('vray hideVFB')</span>
+
+
+<span class="kw">def</span> loadVray():
+    melCommand(<span class="str">'loadPlugin "vrayformaya.mll"'</span>)
+    Do.<span class="skw">popup</span>( <span class="str">"Loading V-Ray plugin..."</span> ,<span class="str">"Waiting 10s ..."</span>,<span class="dig">10</span>)
+    <span class="cmt">#set V-Ray as current renderer: https://around-the-corner.typepad.com/adn/2016/09/setting-up-maya-hardware-20-using-melpython.html</span>
+    melCommand(<span class="str">"setCurrentRenderer vray"</span>)
+    <span class="cmt"># displaying render settings window - needed to fully load vraySettings node.</span>
+    <span class="cmt">#melCommand('unifiedRenderGlobalsWindow') </span>
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="cmt">#melCommand('deleteUI unifiedRenderGlobalsWindow')</span>
+    <span class="cmt">#set render time</span>
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    <span class="cmt">#melCommand('setAttr "vraySettings.progressiveThreshold" 0')</span>
+    <span class="cmt">#melCommand('setAttr "vraySettings.progressiveMaxTime" 0.1')</span>
+
+
+<span class="kw">def</span> createScene():
+    <span class="cmt">#createbox</span>
+    melCommand(<span class="str">"polyCube -w 5 -h 5 -d 5 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1"</span>)
+    <span class="cmt">#create DomeLight</span>
+    melCommand(<span class="str">"select -r `shadingNode -asLight VRayLightDomeShape`"</span>)
+
+
+<span class="kw">def</span> saveImage(build,name):
+    melCommand(<span class="str">'vray vfbControl -saveimage "'</span> + build.replace(<span class="str">'\\'</span>,<span class="str">'\\\\'</span>) + <span class="str">'_'</span> + name + <span class="str">'.jpg"'</span>)
+
+<span class="cmt">####################-VRAY-MAYA-RENDERING-###################</span>
+<span class="kw">def</span> renderVrayCPU(build):
+    <span class="cmt">#render with V-Ray CPU: vrend -help</span>
+    Do.<span class="skw">popup</span>( <span class="str">"Rendering with V-Ray CPU engine"</span> ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray CPU engine"</span>)
+    melCommand(<span class="str">"vrend"</span>)
+    func.getLicense()
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    saveImage(build,<span class="str">"cpu"</span>)
+    melCommand(<span class="str">'vray hideVFB'</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="kw">def</span> renderVrayGPU(build):
+    <span class="cmt">#render with V-Ray CUDA engine</span>
+    Do.<span class="skw">popup</span>( <span class="str">"Rendering with V-Ray CUDA engine"</span> ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray CUDA engine"</span>)
+    melCommand(<span class="str">'setAttr "vraySettings.productionEngine" 2'</span>)
+    melCommand(<span class="str">"vrend"</span>)
+    func.getLicense()
+    <span class="cmt">#wait VFB Stop button to appear and disappear to ensure rendering is completed</span>
+    <span class="cmt">#wait(img.vray_vfb_stop,5)</span>
+    <span class="cmt">#waitVanish(img.vray_vfb_stop,120)</span>
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    saveImage(build,<span class="str">'cuda'</span>)
+    melCommand(<span class="str">'vray hideVFB'</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="kw">def</span> renderVrayIPRwindow(build, name):
+    <span class="cmt">#function is used for both CPU and CUDA rendering, the engine is switched by the renderVrayCPU and renderVRayGPU functions</span>
+    Do.<span class="skw">popup</span>( <span class="str">"Rendering with V-Ray IPR Window"</span> ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray IPR Window"</span>)
+    melCommand(<span class="str">'IPRRenderIntoNewWindow'</span>)
+    func.getLicense()
+    <span class="skw">wait</span>(<span class="dig">5</span>)
+    <span class="skw">click</span>(img.vray_vfb_stop)
+    <span class="skw">wait</span>(<span class="dig">1</span>)
+    saveImage(build,name)
+    melCommand(<span class="str">'vray hideVFB'</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="kw">def</span> renderVrayIPRviewport(build, name):
+    <span class="cmt">#function is used for both CPU and CUDA rendering, the engine is switched by the renderVrayCPU and renderVRayGPU functions</span>
+    Do.<span class="skw">popup</span>( <span class="str">"Rendering with V-Ray IPR Viewport"</span> ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray IPR Viewport"</span>)
+    <span class="skw">click</span>(img.vray_maya_ipr_viewport)
+    func.getLicense()
+    <span class="skw">wait</span>(<span class="dig">3</span>)
+    screenshot = <span class="skw">capture</span>(SCREEN)
+    shutil.move(screenshot, build + <span class="str">'_'</span> + name +<span class="str">'.jpg'</span>)
+    <span class="skw">click</span>()
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="kw">def</span> exportVrscene(build):
+    Do.<span class="skw">popup</span>( <span class="str">"Exporting .vrscene for Standalone rendering"</span> ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Exporting .vrscene for Standalone rendering"</span>)
+    <span class="cmt">#disable rendering</span>
+    melCommand(<span class="str">'setAttr "vraySettings.vrscene_render_on" 0;'</span>)
+    <span class="cmt">#enable vrscene exporter</span>
+    melCommand(<span class="str">'setAttr "vraySettings.vrscene_on" 1'</span>)
+    <span class="cmt">#set path</span>
+    <span class="cmt">#popup('setAttr -type "string" vraySettings.vrscene_filename "' + build.replace('\\','\\\\') + '.vrscene"')</span>
+    melCommand(<span class="str">'setAttr -type "string" vraySettings.vrscene_filename "'</span> + build.replace(<span class="str">'\\'</span>,<span class="str">'\\\\'</span>) + <span class="str">'.vrscene"'</span>)
+    melCommand(<span class="str">'vrend'</span>)
+    <span class="skw">wait</span>(<span class="dig">2</span>)
+
+<span class="cmt">####################-VRAY-STANDALONE-RENDERING-###################</span>
+
+<span class="kw">def</span> renderStdExe(maya_version, build,rtengine):
+    cmd = <span class="str">'python '</span> + <span class="str">'"'</span> + getParentFolder() + <span class="str">'get_maya_registry.py'</span> + <span class="str">'" '</span> + maya_version
+    p = Popen(cmd, stdout=PIPE)
+    vrayStandalone = p.communicate()[<span class="dig">0</span>].strip(<span class="str">'\n'</span>)[:-<span class="dig">1</span>] + <span class="str">r'vray\bin\vray.exe'</span>
+    Debug.user(vrayStandalone)
+    <span class="kw">print</span> vrayStandalone
+    Do.<span class="skw">popup</span>(<span class="str">"Rendering with V-Ray Standalone"</span> + rtengine + <span class="str">'\n'</span> + vrayStandalone ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray Standalone"</span>)
+
+    arg1=vrayStandalone
+    arg2=<span class="str">r'-scenefile="'</span> + build + <span class="str">'.vrscene"'</span>
+    arg3=<span class="str">'-autoclose=1'</span>
+    arg4=rtengine
+    arg5= <span class="str">'-imgFile='</span> + build + rtengine +<span class="str">'.jpg'</span>
+    renderProcess = subprocess.Popen([arg1,arg2,arg3,arg4,arg5]) <span class="cmt">#.popen command will just start rendering and will continue with the rest of the code </span>
+    <span class="skw">wait</span>(img.vray_vfb_stop,<span class="dig">10</span>)
+    func.getLicense()
+    renderProcess.<span class="skw">wait</span>()
+    Debug.user(<span class="str">"V-Ray Standalone Rendering completed"</span>)
+
+<span class="kw">def</span> renderStdZip(maya_version, build, rtengine, vray_zip_env_var,vray_zip_path):
+    vrayStandalone = vray_zip_path + <span class="str">r'\maya_vray\bin\vray.exe'</span>
+    Debug.user(vrayStandalone)
+    <span class="kw">print</span> vrayStandalone
+    Do.<span class="skw">popup</span>(<span class="str">"Rendering with V-Ray Standalone"</span> + rtengine + <span class="str">'\n'</span> + vrayStandalone ,<span class="str">"Working on ..."</span>, <span class="dig">1</span>)
+    Debug.user(<span class="str">"Rendering with V-Ray Standalone"</span>)
+
+    arg1=vrayStandalone
+    arg2=<span class="str">r'-scenefile="'</span> + build + <span class="str">'.vrscene"'</span>
+    arg3=<span class="str">'-autoclose=1'</span>
+    arg4=rtengine
+    arg5= <span class="str">'-imgFile='</span> + build + rtengine +<span class="str">'.jpg'</span>
+    renderProcess = subprocess.Popen([arg1,arg2,arg3,arg4,arg5], env=vray_zip_env_var)
+
+    <span class="skw">wait</span>(img.vray_vfb_stop,<span class="dig">10</span>)
+    func.getLicense()
+    renderProcess.<span class="skw">wait</span>()
+    Debug.user(<span class="str">"V-Ray Standalone Rendering completed"</span>)
+
+<span class="cmt">####################-ZIP-INSTALLATION-###################</span>
+
+
+<span class="cmt">#Debug.user("Maya %s started" %version)</span>
+
+</pre>
+</body>
+</html>

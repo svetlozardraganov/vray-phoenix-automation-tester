@@ -1,0 +1,107 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>img.sikuli</h2> <a href="img.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">from</span> sikuli <span class="kw">import</span> *
+
+screen_center = Location(Screen().getW()/<span class="dig">2</span> , Screen().getH()/<span class="dig">2</span>)
+<span class="cmt">#phoenixFD_install_win = Pattern("phoenix_install_win.png").similar(0.69)</span>
+phoenixFD_install_win = <img src="phoenix_install_win.png" />
+phoenixFD_I_accept = <img src="phoenixFD_I_accept.png" />
+phoenixFD_next = <img src="phoenixFD_next.png" />
+phoenixFD_install_now = <img src="phoenixFD_install_now.png" />
+phoenixFD_finish = <img src="phoenixFD_finish.png" />
+phoenixFD_checkbox_enabled = Pattern(<img src="phoenixFD_checkbox_enabled.png" />).exact()
+max_viewport = <img src="max_viewport.png" />
+max_command_panel = {<span class="str">'2019'</span>:<img src="max_command_panel_2018.png" />,<span class="str">'2018'</span>:<img src="max_command_panel_2018.png" />,<span class="str">'2017'</span>:<img src="max_command_panel_2018.png" />,<span class="str">'2016'</span>:<img src="max_command_panel_2016.png" />,<span class="str">'2015'</span>:<img src="max_command_panel_2016.png" />,<span class="str">'2014'</span>:<img src="max_command_panel_2016.png" />}
+max_top = <img src="max_top.png" />
+max_anim_tools = {<span class="str">'2019'</span>:<img src="max_anim_tools_2018.png" />,<span class="str">'2018'</span>:<img src="max_anim_tools_2018.png" />,<span class="str">'2017'</span>:<img src="max_anim_tools_2018.png" />,<span class="str">'2016'</span>:<img src="max_anim_tools_2016.png" />,<span class="str">'2015'</span>:<img src="max_anim_tools_2016.png" />,<span class="str">'2014'</span>:<img src="max_anim_tools_2016.png" />}
+maximize_viewport = {<span class="str">'2019'</span>:<img src="maximize_viewport_2018.png" />,<span class="str">'2018'</span>:<img src="maximize_viewport_2018.png" />,<span class="str">'2017'</span>:<img src="maximize_viewport_2018.png" />,<span class="str">'2016'</span>:<img src="maximize_viewport_2016.png" />,<span class="str">'2015'</span>:<img src="maximize_viewport_2016.png" />,<span class="str">'2014'</span>:<img src="maximize_viewport_2016.png" />}
+domelight = <img src="domelight_btn-1.png" />
+standard_primitives ={<span class="str">'2019'</span>:Pattern(<img src="max_geometry_2018.png" />).targetOffset(<span class="dig">2</span>,<span class="dig">30</span>),<span class="str">'2018'</span>:Pattern(<img src="max_geometry_2018.png" />).targetOffset(<span class="dig">2</span>,<span class="dig">14</span>),<span class="str">'2017'</span>:Pattern(<img src="max_geometry_2018.png" />).targetOffset(<span class="dig">2</span>,<span class="dig">14</span>),<span class="str">'2016'</span>:Pattern(<img src="max_geometry_2016.png" />).targetOffset(<span class="dig">7</span>,<span class="dig">31</span>),<span class="str">'2015'</span>:Pattern(<img src="max_geometry_2016.png" />).targetOffset(<span class="dig">5</span>,<span class="dig">17</span>),<span class="str">'2014'</span>:Pattern(<img src="max_geometry_2016.png" />).targetOffset(<span class="dig">5</span>,<span class="dig">17</span>)}
+box = Pattern(<img src="button_box.png" />).similar(<span class="dig">0.80</span>)
+box_keyboard_entry_rollout = {<span class="str">'2019'</span>:<img src="box_rollout_keyboard_entry.png" />,<span class="str">'2018'</span>:<img src="box_rollout_keyboard_entry.png" />,<span class="str">'2017'</span>:<img src="box_rollout_keyboard_entry.png" />,<span class="str">'2016'</span>:<img src="box_rollout_keyboard_entry_2016.png" />,<span class="str">'2015'</span>:<img src="box_rollout_keyboard_entry_2016.png" />,<span class="str">'2014'</span>:<img src="box_rollout_keyboard_entry_2016.png" />}
+box_keyboard_entry = {<span class="str">'2019'</span>:Pattern(<img src="box_keyboard_entry.png" />).similar(<span class="dig">0.71</span>).targetOffset(-<span class="dig">10</span>,<span class="dig">9</span>),<span class="str">'2018'</span>:Pattern(<img src="box_keyboard_entry.png" />).similar(<span class="dig">0.71</span>).targetOffset(-<span class="dig">10</span>,<span class="dig">9</span>),<span class="str">'2017'</span>:Pattern(<img src="box_keyboard_entry.png" />).similar(<span class="dig">0.71</span>).targetOffset(-<span class="dig">10</span>,<span class="dig">9</span>),<span class="str">'2016'</span>:Pattern(<img src="box_keyboard_entry_2016.png" />).targetOffset(-<span class="dig">6</span>,<span class="dig">9</span>),<span class="str">'2015'</span>:Pattern(<img src="box_keyboard_entry_2016.png" />).targetOffset(-<span class="dig">6</span>,<span class="dig">9</span>),<span class="str">'2014'</span>:Pattern(<img src="box_keyboard_entry_2016.png" />).targetOffset(-<span class="dig">6</span>,<span class="dig">9</span>)}
+box_create = <img src="box_button_create.png" />
+
+phoenix_beer = <img src="phoenix_button_beer.png" />
+phoenix_fire = <img src="phoenix_fire.png" />
+phoenix_start_sim = <img src="phoenix_button_start_sim.png" />
+phoenix_stop_sim = <img src="phoenix_stop_sim.png" />
+render_btn = {<span class="str">'2019'</span>:<img src="render_btn_2018.png" />,<span class="str">'2018'</span>:<img src="render_btn_2018.png" />,<span class="str">'2017'</span>:<img src="render_btn_2018.png" />,<span class="str">'2016'</span>:<img src="render_btn_2016.png" />,<span class="str">'2015'</span>:<img src="render_btn_2016.png" />,<span class="str">'2014'</span>:<img src="render_btn_2016.png" />}
+maxscript_mini = <img src="maxscript_mini.png" />
+max_viewport_nav = <img src="max_viewport_nav.png" />
+max_command_pannel = <img src="max_command_pannel.png" />
+max_toolbar = <img src="max_toolbar.png" />
+max_menu = <img src="max_menu.png" />
+</pre>
+</body>
+</html>
